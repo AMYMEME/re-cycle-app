@@ -19,7 +19,7 @@ public class RecycleGuideController {
 
 	@PostMapping("/guide")
 	public ResponseEntity<String> addGuide(@RequestBody RecycleGuide recycleGuide) {
-		String result = RecycleGuideService.addGuide(recycleGuide);
+		String result = recycleGuideService.addGuide(recycleGuide);
 		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
 			return new ResponseEntity<>(ErrorCase.DATABASE_CONNECTION_ERROR,
 				HttpStatus.INTERNAL_SERVER_ERROR);
@@ -33,7 +33,7 @@ public class RecycleGuideController {
 
 	@GetMapping("/materials")
 	public ResponseEntity<List<String>> getMaterials() {
-		List<String> result = RecycleGuideService.getMaterials();
+		List<String> result = recycleGuideService.getMaterials();
 		if (result.contains(ErrorCase.DATABASE_CONNECTION_ERROR)) {
 			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

@@ -23,7 +23,7 @@ public class RecycleGuideService {
 	private static final String COLLECTION_NAME = "guides";
 	private static final String SUB_COLLECTION_NAME = "items";
 
-	public static String addGuide(RecycleGuide recycleGuide) {
+	public String addGuide(RecycleGuide recycleGuide) {
 		if (recycleGuide.getGuideline() == null) {
 			return ErrorCase.EMPTY_GUIDELINE_ERROR;
 		}
@@ -42,7 +42,7 @@ public class RecycleGuideService {
 		return updateTime;
 	}
 
-	public static List<String> getMaterials() {
+	public List<String> getMaterials() {
 		List<String> result = new ArrayList<>();
 		ApiFuture<QuerySnapshot> future = DATABASE.collection(COLLECTION_NAME).get();
 		try {
