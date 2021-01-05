@@ -19,8 +19,10 @@ import org.springframework.stereotype.Service;
 public class RecycleGuideService {
 	private static final Firestore DATABASE = FirestoreClient.getFirestore();
 	private static final String COLLECTION_NAME = "guides";
-	private static final String MATERIAL_FIELD_NAME = "material";
 	private static final String SUB_COLLECTION_NAME = "items";
+	private static final String MATERIAL_FIELD_NAME = "material";
+	private static final String ITEM_FIELD_NAME = "item";
+	private static final String GUIDELINE_FIELD_NAME = "guideline";
 	private static final String OK_FLAG = "OK";
 
 	public String addGuide(RecycleGuide recycleGuide) {
@@ -33,7 +35,8 @@ public class RecycleGuideService {
 			addMaterial(material);
 		}
 		Map<String, Object> data = new HashMap<>();
-		data.put("guideline", recycleGuide.getGuideline());
+		data.put(ITEM_FIELD_NAME, recycleGuide.getItem());
+		data.put(GUIDELINE_FIELD_NAME, recycleGuide.getGuideline());
 		DATABASE.collection(COLLECTION_NAME).document(material)
 			.collection(SUB_COLLECTION_NAME).document(recycleGuide.getItem())
 			.set(data);
@@ -73,7 +76,7 @@ public class RecycleGuideService {
 	private boolean isMaterialExist(String material) {
 		ApiFuture<QuerySnapshot> future = DATABASE
 			.collection(COLLECTION_NAME)
-			.whereEqualTo("material", material).get();
+			.whereEqualTo(MATERIAL_FIELD_NAME, material).get();
 		try {
 			return !future.get().getDocuments().isEmpty();
 		} catch (InterruptedException | ExecutionException e) {
