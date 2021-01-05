@@ -5,6 +5,7 @@ import com.erecycler.server.domain.RecycleGuide;
 import com.google.api.core.ApiFuture;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
 import com.google.firebase.cloud.FirestoreClient;
 import java.util.ArrayList;
@@ -73,10 +74,26 @@ public class RecycleGuideService {
 		return result;
 	}
 
+	public String getGuideline(String material, String item) {
+		if (!isMaterialExist(material)) {
+			return ErrorCase.NO_SUCH_MATERIAL_ERROR;
+		}
+		ApiFuture<QuerySnapshot> future = DATABASE.collection(COLLECTION_NAME).document(material)
+			.collection(SUB_COLLECTION_NAME).whereEqualTo(ITEM_FIELD_NAME, item).get();
+		try {
+			List<QueryDocumentSnapshot> document = future.get().getDocuments();
+			if (document.isEmpty()) {
+				return ErrorCase.NO_SUCH_ITEM_ERROR;
+			}
+			return (String) document.get(0).get(GUIDELINE_FIELD_NAME);
+		} catch (InterruptedException | ExecutionException e) {
+			return ErrorCase.DATABASE_CONNECTION_ERROR;
+		}
+	}
+
 	private boolean isMaterialExist(String material) {
 		ApiFuture<QuerySnapshot> future = DATABASE
-			.collection(COLLECTION_NAME)
-			.whereEqualTo(MATERIAL_FIELD_NAME, material).get();
+			.collection(COLLECTION_NAME).whereEqualTo(MATERIAL_FIELD_NAME, material).get();
 		try {
 			return !future.get().getDocuments().isEmpty();
 		} catch (InterruptedException | ExecutionException e) {
