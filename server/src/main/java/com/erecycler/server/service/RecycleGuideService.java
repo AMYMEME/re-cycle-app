@@ -3,11 +3,9 @@ package com.erecycler.server.service;
 import com.erecycler.server.common.ErrorCase;
 import com.erecycler.server.domain.RecycleGuide;
 import com.google.api.core.ApiFuture;
-import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QuerySnapshot;
-import com.google.cloud.firestore.WriteResult;
 import com.google.firebase.cloud.FirestoreClient;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,25 +19,25 @@ import org.springframework.stereotype.Service;
 public class RecycleGuideService {
 	private static final Firestore DATABASE = FirestoreClient.getFirestore();
 	private static final String COLLECTION_NAME = "guides";
+	private static final String MATERIAL_FIELD_NAME = "material";
 	private static final String SUB_COLLECTION_NAME = "items";
+	private static final String OK_FLAG = "OK";
 
 	public String addGuide(RecycleGuide recycleGuide) {
+		String material = recycleGuide.getMaterial();
+
 		if (recycleGuide.getGuideline() == null) {
 			return ErrorCase.EMPTY_GUIDELINE_ERROR;
 		}
-		DocumentReference documentReference = DATABASE
-			.collection(COLLECTION_NAME).document(recycleGuide.getMaterial())
-			.collection(SUB_COLLECTION_NAME).document(recycleGuide.getItem());
+		if (!isMaterialExist(material)) {
+			addMaterial(material);
+		}
 		Map<String, Object> data = new HashMap<>();
 		data.put("guideline", recycleGuide.getGuideline());
-		ApiFuture<WriteResult> result = documentReference.set(data);
-		String updateTime;
-		try {
-			updateTime = result.get().getUpdateTime().toString();
-		} catch (InterruptedException | ExecutionException e) {
-			return ErrorCase.DATABASE_CONNECTION_ERROR;
-		}
-		return updateTime;
+		DATABASE.collection(COLLECTION_NAME).document(material)
+			.collection(SUB_COLLECTION_NAME).document(recycleGuide.getItem())
+			.set(data);
+		return OK_FLAG;
 	}
 
 	public List<String> getMaterials() {
@@ -53,5 +51,23 @@ public class RecycleGuideService {
 			return Collections.singletonList(ErrorCase.DATABASE_CONNECTION_ERROR);
 		}
 		return result;
+	}
+
+	private boolean isMaterialExist(String material) {
+		ApiFuture<QuerySnapshot> future = DATABASE
+			.collection(COLLECTION_NAME)
+			.whereEqualTo("material", material).get();
+		try {
+			return !future.get().getDocuments().isEmpty();
+		} catch (InterruptedException | ExecutionException e) {
+			return false;
+		}
+	}
+
+	private void addMaterial(String material) {
+		Map<String, Object> data = new HashMap<>();
+		data.put(MATERIAL_FIELD_NAME, material);
+		DATABASE.collection(COLLECTION_NAME).document(material).set(data);
+		// no need code for firestore works asynchronously
 	}
 }
