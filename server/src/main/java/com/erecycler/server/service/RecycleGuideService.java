@@ -53,6 +53,23 @@ public class RecycleGuideService {
 		return result;
 	}
 
+	public List<String> getItems(String material) {
+		List<String> result = new ArrayList<>();
+		if (!isMaterialExist(material)) {
+			return Collections.singletonList(ErrorCase.NO_SUCH_MATERIAL_ERROR);
+		}
+		ApiFuture<QuerySnapshot> future = DATABASE.collection(COLLECTION_NAME).document(material)
+			.collection(SUB_COLLECTION_NAME).get();
+		try {
+			for (DocumentSnapshot document : future.get().getDocuments()) {
+				result.add(document.getId());
+			}
+		} catch (InterruptedException | ExecutionException e) {
+			return Collections.singletonList(ErrorCase.DATABASE_CONNECTION_ERROR);
+		}
+		return result;
+	}
+
 	private boolean isMaterialExist(String material) {
 		ApiFuture<QuerySnapshot> future = DATABASE
 			.collection(COLLECTION_NAME)

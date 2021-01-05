@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -32,6 +33,18 @@ public class RecycleGuideController {
 		List<String> result = recycleGuideService.getMaterials();
 		if (result.contains(ErrorCase.DATABASE_CONNECTION_ERROR)) {
 			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
+	@GetMapping("/{material}/items")
+	public ResponseEntity<List<String>> getItems(@PathVariable String material) {
+		List<String> result = recycleGuideService.getItems(material);
+		if (result.contains(ErrorCase.DATABASE_CONNECTION_ERROR)) {
+			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		if (result.contains(ErrorCase.NO_SUCH_MATERIAL_ERROR)) {
+			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
