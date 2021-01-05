@@ -20,10 +20,6 @@ public class RecycleGuideController {
 	@PostMapping("/guide")
 	public ResponseEntity<String> addGuide(@RequestBody RecycleGuide recycleGuide) {
 		String result = recycleGuideService.addGuide(recycleGuide);
-		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(ErrorCase.DATABASE_CONNECTION_ERROR,
-				HttpStatus.INTERNAL_SERVER_ERROR);
-		}
 		if (result.equals(ErrorCase.EMPTY_GUIDELINE_ERROR)) {
 			return new ResponseEntity<>(ErrorCase.EMPTY_GUIDELINE_ERROR,
 				HttpStatus.BAD_REQUEST);
