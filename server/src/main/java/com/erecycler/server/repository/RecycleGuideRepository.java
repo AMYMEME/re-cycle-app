@@ -76,7 +76,7 @@ public class RecycleGuideRepository {
 		// no need code for firestore works asynchronously
 	}
 
-	public void addGuide(RecycleGuide recycleGuide) {
+	public void setGuide(RecycleGuide recycleGuide) {
 		Map<String, Object> data = new HashMap<>();
 		data.put(GUIDELINE_FIELD_NAME, recycleGuide.getGuideline());
 		DATABASE.collection(COLLECTION_NAME).document(recycleGuide.getMaterial())

@@ -82,6 +82,23 @@ public class RecycleGuideService {
 		return OK_STRING_FLAG;
 	}
 
+	public String updateGuideline(String material, String item, String newGuideline) {
+		DocumentSnapshot document = recycleGuideRepository.getGuideline(material, item);
+		if (document == null) {
+			return ErrorCase.DATABASE_CONNECTION_ERROR;
+		}
+		if (!document.exists()) {
+			return ErrorCase.NO_SUCH_ITEM_ERROR;
+		}
+		RecycleGuide recycleGuide = RecycleGuide.builder()
+			.material(material)
+			.item(item)
+			.guideline(newGuideline)
+			.build();
+		recycleGuideRepository.setGuide(recycleGuide);
+		return OK_STRING_FLAG;
+	}
+
 	private boolean isFieldValid(RecycleGuide recycleGuide) {
 		return !(recycleGuide.getGuideline() == null
 			|| recycleGuide.getItem() == null
