@@ -10,5 +10,5 @@ import lombok.Getter;
 public class RecycleGuide {
 	private final String material;
 	private final String item;
-	private String guideline;
+	private final String guideline;
 }
