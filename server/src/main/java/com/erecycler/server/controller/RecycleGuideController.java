@@ -23,8 +23,7 @@ public class RecycleGuideController {
 	public ResponseEntity<String> addGuide(@RequestBody RecycleGuide recycleGuide) {
 		String result = recycleGuideService.addGuide(recycleGuide);
 		if (result.equals(ErrorCase.EMPTY_GUIDELINE_ERROR)) {
-			return new ResponseEntity<>(ErrorCase.EMPTY_GUIDELINE_ERROR,
-				HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
