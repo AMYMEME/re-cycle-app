@@ -21,7 +21,7 @@ public class RecycleGuideRepository {
 	public final String GUIDELINE_FIELD_NAME = "guideline";
 	private final String COLLECTION_NAME = "guides";
 	private final String SUB_COLLECTION_NAME = "items";
-	private final int ERROR_INT_FLAG = -1;
+	public final int ERROR_INT_FLAG = -1;
 
 	public void addGuide(RecycleGuide recycleGuide) {
 		Map<String, Object> data = new HashMap<>();
@@ -68,10 +68,28 @@ public class RecycleGuideRepository {
 		}
 	}
 
+	public int getMaterialItemsSize(String material) {
+		try {
+			return DATABASE.collection(COLLECTION_NAME).document(material)
+				.collection(SUB_COLLECTION_NAME).get().get().size();
+		} catch (InterruptedException | ExecutionException e) {
+			return ERROR_INT_FLAG;
+		}
+	}
+
 	public void addMaterial(String material) {
 		Map<String, Object> data = new HashMap<>();
 		data.put(MATERIAL_FIELD_NAME, material);
 		DATABASE.collection(COLLECTION_NAME).document(material).set(data);
 		// no need code for firestore works asynchronously
+	}
+
+	public void deleteMaterial(String material) {
+		DATABASE.collection(COLLECTION_NAME).document(material).delete();
+	}
+
+	public void deleteGuideline(String material, String item) {
+		DATABASE.collection(COLLECTION_NAME).document(material)
+			.collection(SUB_COLLECTION_NAME).document(item).delete();
 	}
 }

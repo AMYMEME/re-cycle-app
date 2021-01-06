@@ -8,6 +8,7 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -61,5 +62,19 @@ public class RecycleGuideController {
 			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(result, HttpStatus.OK);
+	}
+
+	@DeleteMapping("/{material}/{item}/guide")
+	public ResponseEntity<String> deleteGuideline(
+		@PathVariable String material, @PathVariable String item) {
+		String result = recycleGuideService.deleteGuide(material, item);
+		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
+			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		if (Arrays.asList(ErrorCase.NO_SUCH_MATERIAL_ERROR, ErrorCase.NO_SUCH_ITEM_ERROR)
+			.contains(result)) {
+			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+		}
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 }

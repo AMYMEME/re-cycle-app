@@ -4,9 +4,7 @@ import com.erecycler.server.common.ErrorCase;
 import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.repository.RecycleGuideRepository;
 import com.google.cloud.firestore.DocumentSnapshot;
-import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
-import com.google.firebase.cloud.FirestoreClient;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,11 +14,8 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Service
 public class RecycleGuideService {
-	private static final Firestore DATABASE = FirestoreClient.getFirestore();
-	private final String COLLECTION_NAME = "guides";
-	private final String SUB_COLLECTION_NAME = "items";
-	private final String OK_STRING_FLAG = "OK";
 	private final RecycleGuideRepository recycleGuideRepository;
+	private final String OK_STRING_FLAG = "OK";
 
 	public String addGuide(RecycleGuide recycleGuide) {
 		String material = recycleGuide.getMaterial();
@@ -74,5 +69,23 @@ public class RecycleGuideService {
 			return ErrorCase.NO_SUCH_ITEM_ERROR;
 		}
 		return (String) document.get(recycleGuideRepository.GUIDELINE_FIELD_NAME);
+	}
+
+	public String deleteGuide(String material, String item) {
+		if (!recycleGuideRepository.isMaterialExist(material)) {
+			return ErrorCase.NO_SUCH_MATERIAL_ERROR;
+		}
+		DocumentSnapshot document = recycleGuideRepository.getGuideline(material, item);
+		if (document == null) {
+			return ErrorCase.DATABASE_CONNECTION_ERROR;
+		}
+		if (!document.exists()) {
+			return ErrorCase.NO_SUCH_ITEM_ERROR;
+		}
+		if (recycleGuideRepository.getMaterialItemsSize(material) == 1) {
+			recycleGuideRepository.deleteMaterial(material);
+		}
+		recycleGuideRepository.deleteGuideline(material, item);
+		return OK_STRING_FLAG;
 	}
 }
