@@ -19,17 +19,9 @@ public class RecycleGuideRepository {
 	private static final Firestore DATABASE = FirestoreClient.getFirestore();
 	public final String MATERIAL_FIELD_NAME = "material";
 	public final String GUIDELINE_FIELD_NAME = "guideline";
+	public final int ERROR_INT_FLAG = -1;
 	private final String COLLECTION_NAME = "guides";
 	private final String SUB_COLLECTION_NAME = "items";
-	public final int ERROR_INT_FLAG = -1;
-
-	public void addGuide(RecycleGuide recycleGuide) {
-		Map<String, Object> data = new HashMap<>();
-		data.put(GUIDELINE_FIELD_NAME, recycleGuide.getGuideline());
-		DATABASE.collection(COLLECTION_NAME).document(recycleGuide.getMaterial())
-			.collection(SUB_COLLECTION_NAME).document(recycleGuide.getItem())
-			.set(data);
-	}
 
 	public List<QueryDocumentSnapshot> getMaterials() {
 		ApiFuture<QuerySnapshot> future = DATABASE.collection(COLLECTION_NAME).get();
@@ -82,6 +74,14 @@ public class RecycleGuideRepository {
 		data.put(MATERIAL_FIELD_NAME, material);
 		DATABASE.collection(COLLECTION_NAME).document(material).set(data);
 		// no need code for firestore works asynchronously
+	}
+
+	public void addGuide(RecycleGuide recycleGuide) {
+		Map<String, Object> data = new HashMap<>();
+		data.put(GUIDELINE_FIELD_NAME, recycleGuide.getGuideline());
+		DATABASE.collection(COLLECTION_NAME).document(recycleGuide.getMaterial())
+			.collection(SUB_COLLECTION_NAME).document(recycleGuide.getItem())
+			.set(data);
 	}
 
 	public void deleteMaterial(String material) {
