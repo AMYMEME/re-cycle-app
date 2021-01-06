@@ -1,12 +1,12 @@
 package com.erecycler.server.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
-@ToString
 @Getter
-@RequiredArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RecycleGuide {
 	private final String material;
 	private final String item;
