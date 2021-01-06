@@ -18,15 +18,14 @@ public class RecycleGuideService {
 	private final String OK_STRING_FLAG = "OK";
 
 	public String addGuide(RecycleGuide recycleGuide) {
-		String material = recycleGuide.getMaterial();
-
-		if (recycleGuide.getGuideline() == null) {
-			return ErrorCase.EMPTY_GUIDELINE_ERROR;
+		if (!isFieldValid(recycleGuide)) {
+			return ErrorCase.INVALID_FIELD_ERROR;
 		}
+		String material = recycleGuide.getMaterial();
 		if (!recycleGuideRepository.isMaterialExist(material)) {
 			recycleGuideRepository.addMaterial(material);
 		}
-		recycleGuideRepository.addGuide(recycleGuide);
+		recycleGuideRepository.setGuide(recycleGuide);
 		return OK_STRING_FLAG;
 	}
 
@@ -58,9 +57,6 @@ public class RecycleGuideService {
 	}
 
 	public String getGuideline(String material, String item) {
-		if (!recycleGuideRepository.isMaterialExist(material)) {
-			return ErrorCase.NO_SUCH_MATERIAL_ERROR;
-		}
 		DocumentSnapshot document = recycleGuideRepository.getGuideline(material, item);
 		if (document == null) {
 			return ErrorCase.DATABASE_CONNECTION_ERROR;
@@ -72,9 +68,6 @@ public class RecycleGuideService {
 	}
 
 	public String deleteGuide(String material, String item) {
-		if (!recycleGuideRepository.isMaterialExist(material)) {
-			return ErrorCase.NO_SUCH_MATERIAL_ERROR;
-		}
 		DocumentSnapshot document = recycleGuideRepository.getGuideline(material, item);
 		if (document == null) {
 			return ErrorCase.DATABASE_CONNECTION_ERROR;
@@ -87,5 +80,11 @@ public class RecycleGuideService {
 		}
 		recycleGuideRepository.deleteGuideline(material, item);
 		return OK_STRING_FLAG;
+	}
+
+	private boolean isFieldValid(RecycleGuide recycleGuide) {
+		return !(recycleGuide.getGuideline() == null
+			|| recycleGuide.getItem() == null
+			|| recycleGuide.getMaterial() == null);
 	}
 }

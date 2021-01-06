@@ -3,7 +3,6 @@ package com.erecycler.server.controller;
 import com.erecycler.server.common.ErrorCase;
 import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.service.RecycleGuideService;
-import java.util.Arrays;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,7 +22,7 @@ public class RecycleGuideController {
 	@PostMapping("/guide")
 	public ResponseEntity<String> addGuide(@RequestBody RecycleGuide recycleGuide) {
 		String result = recycleGuideService.addGuide(recycleGuide);
-		if (result.equals(ErrorCase.EMPTY_GUIDELINE_ERROR)) {
+		if (result.equals(ErrorCase.INVALID_FIELD_ERROR)) {
 			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(HttpStatus.CREATED);
@@ -45,7 +44,7 @@ public class RecycleGuideController {
 			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		if (result.contains(ErrorCase.NO_SUCH_MATERIAL_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
@@ -57,9 +56,8 @@ public class RecycleGuideController {
 		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
 			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		if (Arrays.asList(ErrorCase.NO_SUCH_MATERIAL_ERROR, ErrorCase.NO_SUCH_ITEM_ERROR)
-			.contains(result)) {
-			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+		if (result.equals(ErrorCase.NO_SUCH_MATERIAL_ERROR)) {
+			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
 		}
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
@@ -71,8 +69,7 @@ public class RecycleGuideController {
 		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
 			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		if (Arrays.asList(ErrorCase.NO_SUCH_MATERIAL_ERROR, ErrorCase.NO_SUCH_ITEM_ERROR)
-			.contains(result)) {
+		if (result.equals(ErrorCase.NO_SUCH_MATERIAL_ERROR)) {
 			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
