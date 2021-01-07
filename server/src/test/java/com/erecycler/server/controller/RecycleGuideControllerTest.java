@@ -13,6 +13,7 @@ import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.service.RecycleGuideService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -113,6 +114,15 @@ class RecycleGuideControllerTest {
 			// then
 			.andExpect(status().isOk())
 			.andExpect(content().string(toJSONArray(mockMaterials)))
+			.andDo(print());
+
+		// given
+		given(recycleGuideService.getMaterials()).willReturn(
+			Collections.singletonList(ErrorCase.DATABASE_CONNECTION_ERROR));
+		// when
+		mockMvc.perform(get("/materials"))
+			// then
+			.andExpect(status().isInternalServerError())
 			.andDo(print());
 	}
 }
