@@ -2,6 +2,7 @@ package com.erecycler.server.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -191,6 +192,43 @@ class RecycleGuideControllerTest {
 		mockMvc.perform(get("/{material}/{item}/guide", "invalidName", "invalidName"))
 			// then
 			.andExpect(status().isNotFound())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("DELETE /:material/:item/guide controller")
+	void deleteGuideline() throws Exception {
+		// given
+		given(this.recycleGuideService
+			.deleteGuide(mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem()))
+			.willReturn("OK");
+		// when
+		mockMvc.perform(delete("/{material}/{item}/guide",
+			mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem()))
+			// then
+			.andExpect(status().isNoContent())
+			.andExpect(content().string(""))
+			.andDo(print());
+
+		// given
+		given(this.recycleGuideService
+			.deleteGuide(mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem()))
+			.willReturn(ErrorCase.DATABASE_CONNECTION_ERROR);
+		// when
+		mockMvc.perform(delete("/{material}/{item}/guide",
+			mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem()))
+			// then
+			.andExpect(status().isInternalServerError())
+			.andDo(print());
+
+		// given
+		given(this.recycleGuideService
+			.deleteGuide("invalidName", "invalidName"))
+			.willReturn(ErrorCase.NO_SUCH_ITEM_ERROR);
+		// when
+		mockMvc.perform(delete("/{material}/{item}/guide", "invalidName", "invalidName"))
+			// then
+			.andExpect(status().isBadRequest())
 			.andDo(print());
 	}
 }
