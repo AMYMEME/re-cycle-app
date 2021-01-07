@@ -4,6 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -227,6 +228,48 @@ class RecycleGuideControllerTest {
 			.willReturn(ErrorCase.NO_SUCH_ITEM_ERROR);
 		// when
 		mockMvc.perform(delete("/{material}/{item}/guide", "invalidName", "invalidName"))
+			// then
+			.andExpect(status().isBadRequest())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("PATCH /:material/:item/guide controller")
+	void updateGuideline() throws Exception {
+		// given
+		given(this.recycleGuideService
+			.updateGuideline(mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem(),
+				"newGuidelineBody"))
+			.willReturn("OK");
+		// when
+		mockMvc.perform(patch("/{material}/{item}/guide",
+			mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem())
+			.content("newGuidelineBody"))
+			// then
+			.andExpect(status().isOk())
+			.andExpect(content().string(""))
+			.andDo(print());
+
+		// given
+		given(this.recycleGuideService
+			.updateGuideline(mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem(),
+				"newGuidelineBody"))
+			.willReturn(ErrorCase.DATABASE_CONNECTION_ERROR);
+		// when
+		mockMvc.perform(patch("/{material}/{item}/guide",
+			mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem())
+			.content("newGuidelineBody"))
+			// then
+			.andExpect(status().isInternalServerError())
+			.andDo(print());
+
+		// given
+		given(this.recycleGuideService
+			.updateGuideline("invalidName", "invalidName", "newGuidelineBody"))
+			.willReturn(ErrorCase.NO_SUCH_ITEM_ERROR);
+		// when
+		mockMvc.perform(patch("/{material}/{item}/guide", "invalidName", "invalidName")
+			.content("newGuidelineBody"))
 			// then
 			.andExpect(status().isBadRequest())
 			.andDo(print());
