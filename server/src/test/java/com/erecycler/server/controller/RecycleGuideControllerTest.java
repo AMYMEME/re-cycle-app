@@ -102,4 +102,17 @@ class RecycleGuideControllerTest {
 			.andExpect(status().isBadRequest())
 			.andDo(print());
 	}
+
+	@Test
+	@DisplayName("GET /materials controller")
+	void getMaterials() throws Exception {
+		// given
+		given(recycleGuideService.getMaterials()).willReturn(mockMaterials);
+		// when
+		mockMvc.perform(get("/materials"))
+			// then
+			.andExpect(status().isOk())
+			.andExpect(content().string(toJSONArray(mockMaterials)))
+			.andDo(print());
+	}
 }
