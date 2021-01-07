@@ -71,7 +71,7 @@ public class RecycleGuideController {
 		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
 			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		if (result.equals(ErrorCase.NO_SUCH_MATERIAL_ERROR)) {
+		if (result.equals(ErrorCase.NO_SUCH_ITEM_ERROR)) {
 			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
