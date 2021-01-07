@@ -1,13 +1,17 @@
 package com.erecycler.server.controller;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.erecycler.server.common.ErrorCase;
 import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.service.RecycleGuideService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import org.json.JSONArray;
@@ -19,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(RecycleGuideController.class)
@@ -44,6 +49,8 @@ class RecycleGuideControllerTest {
 		.build();
 	@Autowired
 	private MockMvc mockMvc;
+	@Autowired
+	private ObjectMapper objectMapper;
 	@MockBean
 	private RecycleGuideService recycleGuideService;
 
@@ -67,15 +74,32 @@ class RecycleGuideControllerTest {
 	}
 
 	@Test
-	@DisplayName("GET /materials controller")
-	void getMaterials() throws Exception {
+	@DisplayName("POST /guide controller")
+	void addGuide() throws Exception {
+		String requestBody = objectMapper.writeValueAsString(mockRecycleGuide1);
+
 		// given
-		given(recycleGuideService.getMaterials()).willReturn(mockMaterials);
+		given(this.recycleGuideService.addGuide(any(RecycleGuide.class))).willReturn("OK");
 		// when
-		mockMvc.perform(get("/materials"))
+		mockMvc.perform(post("/guide")
+			.content(requestBody)
+			.contentType(MediaType.APPLICATION_JSON)
+			.accept(MediaType.APPLICATION_JSON))
 			// then
-			.andExpect(status().isOk())
-			.andExpect(content().string(toJSONArray(mockMaterials)))
+			.andExpect(status().isCreated())
+			.andExpect(content().string(""))
+			.andDo(print());
+
+		// given
+		given(this.recycleGuideService.addGuide(any(RecycleGuide.class)))
+			.willReturn(ErrorCase.INVALID_FIELD_ERROR);
+		// when
+		mockMvc.perform(post("/guide")
+			.content(requestBody)
+			.contentType(MediaType.APPLICATION_JSON)
+			.accept(MediaType.APPLICATION_JSON))
+			// then
+			.andExpect(status().isBadRequest())
 			.andDo(print());
 	}
 }
