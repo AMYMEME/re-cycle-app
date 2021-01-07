@@ -3,7 +3,6 @@ package com.erecycler.server.controller;
 import com.erecycler.server.common.ErrorCase;
 import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.service.RecycleGuideService;
-import java.util.Arrays;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -85,9 +84,8 @@ public class RecycleGuideController {
 		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
 			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		if (Arrays.asList(ErrorCase.NO_SUCH_MATERIAL_ERROR, ErrorCase.NO_SUCH_ITEM_ERROR)
-			.contains(result)) {
-			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+		if (result.equals(ErrorCase.NO_SUCH_ITEM_ERROR)) {
+			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
