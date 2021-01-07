@@ -13,6 +13,7 @@ import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.service.RecycleGuideService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.json.JSONArray;
@@ -123,6 +124,40 @@ class RecycleGuideControllerTest {
 		mockMvc.perform(get("/materials"))
 			// then
 			.andExpect(status().isInternalServerError())
+			.andDo(print());
+	}
+
+	@Test
+	@DisplayName("GET /:material/items controller")
+	void getItems() throws Exception {
+		List<String> result = Arrays
+			.asList(mockRecycleGuide1.getItem(), mockRecycleGuide2.getItem());
+		// given
+		given(this.recycleGuideService.getItems(mockRecycleGuide1.getMaterial()))
+			.willReturn(result);
+		// when
+		mockMvc.perform(get("/{material}/items", mockRecycleGuide1.getMaterial()))
+			// then
+			.andExpect(status().isOk())
+			.andExpect(content().string(toJSONArray(result)))
+			.andDo(print());
+
+		// given
+		given(this.recycleGuideService.getItems(mockRecycleGuide1.getMaterial()))
+			.willReturn(Collections.singletonList(ErrorCase.DATABASE_CONNECTION_ERROR));
+		// when
+		mockMvc.perform(get("/{material}/items", mockRecycleGuide1.getMaterial()))
+			// then
+			.andExpect(status().isInternalServerError())
+			.andDo(print());
+
+		// given
+		given(this.recycleGuideService.getItems("invalidName"))
+			.willReturn(Collections.singletonList(ErrorCase.NO_SUCH_MATERIAL_ERROR));
+		// when
+		mockMvc.perform(get("/{material}/items", "invalidName"))
+			// then
+			.andExpect(status().isNotFound())
 			.andDo(print());
 	}
 }
