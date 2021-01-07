@@ -15,7 +15,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,9 +33,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @WebMvcTest(RecycleGuideController.class)
 @AutoConfigureMockMvc
 class RecycleGuideControllerTest {
-	List<RecycleGuide> mockRecycleGuides = new ArrayList<>();
 	List<String> mockMaterials = new ArrayList<>();
-	List<String> mockItems = new ArrayList<>();
+	List<String> mockItemsOfMock1 = new ArrayList<>();
 	RecycleGuide mockRecycleGuide1 = RecycleGuide.builder()
 		.material("materialName1")
 		.item("itemName1")
@@ -62,17 +63,14 @@ class RecycleGuideControllerTest {
 
 	@BeforeEach
 	void setUp() {
-		mockRecycleGuides.add(mockRecycleGuide1);
-		mockMaterials.add(mockRecycleGuide1.getMaterial());
-		mockItems.add(mockRecycleGuide1.getItem());
+		Set<String> materialSet = new HashSet<>();
+		materialSet.add(mockRecycleGuide1.getMaterial());
+		materialSet.add(mockRecycleGuide2.getMaterial());
+		materialSet.add(mockRecycleGuide3.getMaterial());
+		mockMaterials = new ArrayList<>(materialSet);
 
-		mockRecycleGuides.add(mockRecycleGuide2);
-		mockMaterials.add(mockRecycleGuide2.getMaterial());
-		mockItems.add(mockRecycleGuide2.getItem());
-
-		mockRecycleGuides.add(mockRecycleGuide3);
-		mockMaterials.add(mockRecycleGuide3.getMaterial());
-		mockItems.add(mockRecycleGuide3.getItem());
+		List<String> mockItemsOfMock1 = Arrays
+			.asList(mockRecycleGuide1.getItem(), mockRecycleGuide2.getItem());
 	}
 
 	@Test
@@ -130,16 +128,14 @@ class RecycleGuideControllerTest {
 	@Test
 	@DisplayName("GET /:material/items controller")
 	void getItems() throws Exception {
-		List<String> result = Arrays
-			.asList(mockRecycleGuide1.getItem(), mockRecycleGuide2.getItem());
 		// given
 		given(this.recycleGuideService.getItems(mockRecycleGuide1.getMaterial()))
-			.willReturn(result);
+			.willReturn(mockItemsOfMock1);
 		// when
 		mockMvc.perform(get("/{material}/items", mockRecycleGuide1.getMaterial()))
 			// then
 			.andExpect(status().isOk())
-			.andExpect(content().string(toJSONArray(result)))
+			.andExpect(content().string(toJSONArray(mockItemsOfMock1)))
 			.andDo(print());
 
 		// given
