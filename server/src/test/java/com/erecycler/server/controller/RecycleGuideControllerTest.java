@@ -156,4 +156,41 @@ class RecycleGuideControllerTest {
 			.andExpect(status().isNotFound())
 			.andDo(print());
 	}
+
+	@Test
+	@DisplayName("GET /:material/:item/guide controller")
+	void getGuideline() throws Exception {
+		// given
+		given(this.recycleGuideService
+			.getGuideline(mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem()))
+			.willReturn(mockRecycleGuide1.getGuideline());
+		// when
+		mockMvc.perform(get("/{material}/{item}/guide",
+			mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem()))
+			// then
+			.andExpect(status().isOk())
+			.andExpect(content().string(mockRecycleGuide1.getGuideline()))
+			.andDo(print());
+
+		// given
+		given(this.recycleGuideService
+			.getGuideline(mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem()))
+			.willReturn(ErrorCase.DATABASE_CONNECTION_ERROR);
+		// when
+		mockMvc.perform(get("/{material}/{item}/guide",
+			mockRecycleGuide1.getMaterial(), mockRecycleGuide1.getItem()))
+			// then
+			.andExpect(status().isInternalServerError())
+			.andDo(print());
+
+		// given
+		given(this.recycleGuideService
+			.getGuideline("invalidName", "invalidName"))
+			.willReturn(ErrorCase.NO_SUCH_ITEM_ERROR);
+		// when
+		mockMvc.perform(get("/{material}/{item}/guide", "invalidName", "invalidName"))
+			// then
+			.andExpect(status().isNotFound())
+			.andDo(print());
+	}
 }
