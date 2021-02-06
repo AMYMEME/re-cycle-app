@@ -33,12 +33,14 @@ public class RecycleGuideController {
 	}
 
 	@GetMapping("/materials")
-	public ResponseEntity<List<String>> getMaterials() {
+	public ResponseEntity<Object> getMaterials() {
 		List<String> result = recycleGuideService.getMaterials();
-		if (result.contains(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		if (result.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					ErrorCase.DATABASE_CONNECTION_ERROR));
 		}
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		return ResponseEntity.ok(result);
 	}
 
 	@GetMapping("/{material}/items")

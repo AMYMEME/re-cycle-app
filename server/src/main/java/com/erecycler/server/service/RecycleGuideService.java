@@ -29,7 +29,7 @@ public class RecycleGuideService {
 		List<String> result = new ArrayList<>();
 		List<QueryDocumentSnapshot> documents = recycleGuideRepository.getMaterials();
 		if (documents.isEmpty()) {
-			return Collections.singletonList(ErrorCase.DATABASE_CONNECTION_ERROR);
+			return Collections.emptyList();
 		}
 		for (DocumentSnapshot document : documents) {
 			result.add(document.getId());
@@ -93,11 +93,5 @@ public class RecycleGuideService {
 			.build();
 		recycleGuideRepository.setGuide(recycleGuide);
 		return OK_STRING_FLAG;
-	}
-
-	private boolean isFieldValid(RecycleGuide recycleGuide) {
-		return !(recycleGuide.getGuideline() == null
-			|| recycleGuide.getItem() == null
-			|| recycleGuide.getMaterial() == null);
 	}
 }
