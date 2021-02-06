@@ -66,20 +66,12 @@ public class RecycleGuideService {
 		recycleGuideRepository.deleteGuideline(material, item);
 	}
 
-	public String updateGuideline(String material, String item, String newGuideline) {
-		DocumentSnapshot document = recycleGuideRepository.getGuideline(material, item);
-		if (document == null) {
-			return ErrorCase.DATABASE_CONNECTION_ERROR;
-		}
-		if (!document.exists()) {
-			return ErrorCase.NO_SUCH_ITEM_ERROR;
-		}
+	public void updateGuideline(String material, String item, String newGuideline) {
 		RecycleGuide recycleGuide = RecycleGuide.builder()
 			.material(material)
 			.item(item)
 			.guideline(newGuideline)
 			.build();
 		recycleGuideRepository.setGuide(recycleGuide);
-		return OK_STRING_FLAG;
 	}
 }
