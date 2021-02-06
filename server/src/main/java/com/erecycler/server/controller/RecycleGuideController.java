@@ -44,15 +44,19 @@ public class RecycleGuideController {
 	}
 
 	@GetMapping("/{material}/items")
-	public ResponseEntity<List<String>> getItems(@PathVariable String material) {
+	public ResponseEntity<Object> getItems(@PathVariable String material) {
+		if (!recycleGuideService.isMaterialExist(material)) {
+			return ResponseEntity.badRequest().body(new ErrorMessage(HttpStatus.BAD_REQUEST.value(),
+				ErrorCase.NO_SUCH_MATERIAL_ERROR));
+		}
+
 		List<String> result = recycleGuideService.getItems(material);
-		if (result.contains(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		if (result.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					ErrorCase.DATABASE_CONNECTION_ERROR));
 		}
-		if (result.contains(ErrorCase.NO_SUCH_MATERIAL_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		return ResponseEntity.ok(result);
 	}
 
 	@GetMapping("/{material}/{item}/guide")

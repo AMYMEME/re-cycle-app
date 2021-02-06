@@ -39,17 +39,18 @@ public class RecycleGuideService {
 
 	public List<String> getItems(String material) {
 		List<String> result = new ArrayList<>();
-		if (!recycleGuideRepository.isMaterialExist(material)) {
-			return Collections.singletonList(ErrorCase.NO_SUCH_MATERIAL_ERROR);
-		}
 		List<QueryDocumentSnapshot> documents = recycleGuideRepository.getItems(material);
 		if (documents.isEmpty()) {
-			return Collections.singletonList(ErrorCase.DATABASE_CONNECTION_ERROR);
+			return Collections.emptyList();
 		}
 		for (DocumentSnapshot document : documents) {
 			result.add(document.getId());
 		}
 		return result;
+	}
+
+	public boolean isMaterialExist(String material) {
+		return recycleGuideRepository.isMaterialExist(material);
 	}
 
 	public String getGuideline(String material, String item) {
