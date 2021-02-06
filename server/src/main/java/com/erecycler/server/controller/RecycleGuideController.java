@@ -1,6 +1,7 @@
 package com.erecycler.server.controller;
 
 import com.erecycler.server.common.ErrorCase;
+import com.erecycler.server.domain.ErrorMessage;
 import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.service.RecycleGuideService;
 import java.util.List;
@@ -21,11 +22,13 @@ public class RecycleGuideController {
 	private final RecycleGuideService recycleGuideService;
 
 	@PostMapping("/guide")
-	public ResponseEntity<String> addGuide(@RequestBody RecycleGuide recycleGuide) {
-		String result = recycleGuideService.addGuide(recycleGuide);
-		if (result.equals(ErrorCase.INVALID_FIELD_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+	public ResponseEntity<Object> addGuide(@RequestBody RecycleGuide recycleGuide) {
+		if (!isFieldValid(recycleGuide)) {
+			return ResponseEntity.badRequest().body(
+				new ErrorMessage(HttpStatus.BAD_REQUEST.value(), ErrorCase.INVALID_FIELD_ERROR));
 		}
+
+		recycleGuideService.addGuide(recycleGuide);
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
@@ -88,5 +91,11 @@ public class RecycleGuideController {
 			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
 		}
 		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	private boolean isFieldValid(RecycleGuide recycleGuide) {
+		return !(recycleGuide.getGuideline() == null
+			|| recycleGuide.getItem() == null
+			|| recycleGuide.getMaterial() == null);
 	}
 }

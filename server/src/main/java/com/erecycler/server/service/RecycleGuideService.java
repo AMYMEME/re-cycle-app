@@ -17,16 +17,12 @@ public class RecycleGuideService {
 	private final RecycleGuideRepository recycleGuideRepository;
 	private final String OK_STRING_FLAG = "OK";
 
-	public String addGuide(RecycleGuide recycleGuide) {
-		if (!isFieldValid(recycleGuide)) {
-			return ErrorCase.INVALID_FIELD_ERROR;
-		}
+	public void addGuide(RecycleGuide recycleGuide) {
 		String material = recycleGuide.getMaterial();
 		if (!recycleGuideRepository.isMaterialExist(material)) {
 			recycleGuideRepository.addMaterial(material);
 		}
 		recycleGuideRepository.setGuide(recycleGuide);
-		return OK_STRING_FLAG;
 	}
 
 	public List<String> getMaterials() {
