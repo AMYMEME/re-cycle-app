@@ -17,8 +17,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class RecycleGuideRepository {
 	private static final Firestore DATABASE = FirestoreClient.getFirestore();
-	public final String MATERIAL_FIELD_NAME = "material";
-	public final String GUIDELINE_FIELD_NAME = "guideline";
+	private final String MATERIAL_FIELD_NAME = "material";
+	private final String GUIDELINE_FIELD_NAME = "guideline";
 	public final int ERROR_INT_FLAG = -1;
 	private final String COLLECTION_NAME = "guides";
 	private final String SUB_COLLECTION_NAME = "items";

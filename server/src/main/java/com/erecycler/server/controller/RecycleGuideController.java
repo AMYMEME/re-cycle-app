@@ -4,7 +4,9 @@ import com.erecycler.server.common.ErrorCase;
 import com.erecycler.server.domain.ErrorMessage;
 import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.service.RecycleGuideService;
+import com.google.cloud.firestore.DocumentSnapshot;
 import java.util.List;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,16 +62,19 @@ public class RecycleGuideController {
 	}
 
 	@GetMapping("/{material}/{item}/guide")
-	public ResponseEntity<String> getGuideline(
+	public ResponseEntity<Object> getGuideline(
 		@PathVariable String material, @PathVariable String item) {
-		String result = recycleGuideService.getGuideline(material, item);
-		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		DocumentSnapshot result = recycleGuideService.getGuideline(material, item);
+		if (result == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					ErrorCase.DATABASE_CONNECTION_ERROR));
 		}
-		if (result.equals(ErrorCase.NO_SUCH_ITEM_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+		if (!result.exists()) {
+			return ResponseEntity.notFound().build();
 		}
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		return ResponseEntity
+			.ok(Objects.requireNonNull(result.get(recycleGuideService.GUIDELINE_FIELD_NAME)));
 	}
 
 	@DeleteMapping("/{material}/{item}/guide")

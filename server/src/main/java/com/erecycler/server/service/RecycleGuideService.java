@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Service
 public class RecycleGuideService {
+	public final String MATERIAL_FIELD_NAME = "material";
+	public final String GUIDELINE_FIELD_NAME = "guideline";
 	private final RecycleGuideRepository recycleGuideRepository;
 	private final String OK_STRING_FLAG = "OK";
 
@@ -53,15 +55,8 @@ public class RecycleGuideService {
 		return recycleGuideRepository.isMaterialExist(material);
 	}
 
-	public String getGuideline(String material, String item) {
-		DocumentSnapshot document = recycleGuideRepository.getGuideline(material, item);
-		if (document == null) {
-			return ErrorCase.DATABASE_CONNECTION_ERROR;
-		}
-		if (!document.exists()) {
-			return ErrorCase.NO_SUCH_ITEM_ERROR;
-		}
-		return (String) document.get(recycleGuideRepository.GUIDELINE_FIELD_NAME);
+	public DocumentSnapshot getGuideline(String material, String item) {
+		return recycleGuideRepository.getGuideline(material, item);
 	}
 
 	public String deleteGuide(String material, String item) {
