@@ -1,6 +1,5 @@
 package com.erecycler.server.service;
 
-import com.erecycler.server.common.ErrorCase;
 import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.repository.RecycleGuideRepository;
 import com.google.cloud.firestore.DocumentSnapshot;
@@ -14,10 +13,8 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 @Service
 public class RecycleGuideService {
-	public final String MATERIAL_FIELD_NAME = "material";
 	public final String GUIDELINE_FIELD_NAME = "guideline";
 	private final RecycleGuideRepository recycleGuideRepository;
-	private final String OK_STRING_FLAG = "OK";
 
 	public void addGuide(RecycleGuide recycleGuide) {
 		String material = recycleGuide.getMaterial();
