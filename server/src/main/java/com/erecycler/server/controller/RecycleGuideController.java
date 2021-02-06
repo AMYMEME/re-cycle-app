@@ -1,9 +1,12 @@
 package com.erecycler.server.controller;
 
 import com.erecycler.server.common.ErrorCase;
+import com.erecycler.server.domain.ErrorMessage;
 import com.erecycler.server.domain.RecycleGuide;
 import com.erecycler.server.service.RecycleGuideService;
+import com.google.cloud.firestore.DocumentSnapshot;
 import java.util.List;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,72 +24,99 @@ public class RecycleGuideController {
 	private final RecycleGuideService recycleGuideService;
 
 	@PostMapping("/guide")
-	public ResponseEntity<String> addGuide(@RequestBody RecycleGuide recycleGuide) {
-		String result = recycleGuideService.addGuide(recycleGuide);
-		if (result.equals(ErrorCase.INVALID_FIELD_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+	public ResponseEntity<Object> addGuide(@RequestBody RecycleGuide recycleGuide) {
+		if (!isFieldValid(recycleGuide)) {
+			return ResponseEntity.badRequest().body(
+				new ErrorMessage(HttpStatus.BAD_REQUEST.value(), ErrorCase.INVALID_FIELD_ERROR));
 		}
+
+		recycleGuideService.addGuide(recycleGuide);
 		return new ResponseEntity<>(HttpStatus.CREATED);
 	}
 
 	@GetMapping("/materials")
-	public ResponseEntity<List<String>> getMaterials() {
+	public ResponseEntity<Object> getMaterials() {
 		List<String> result = recycleGuideService.getMaterials();
-		if (result.contains(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		if (result.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					ErrorCase.DATABASE_CONNECTION_ERROR));
 		}
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		return ResponseEntity.ok(result);
 	}
 
 	@GetMapping("/{material}/items")
-	public ResponseEntity<List<String>> getItems(@PathVariable String material) {
+	public ResponseEntity<Object> getItems(@PathVariable String material) {
+		if (!recycleGuideService.isMaterialExist(material)) {
+			return ResponseEntity.badRequest().body(new ErrorMessage(HttpStatus.BAD_REQUEST.value(),
+				ErrorCase.NO_SUCH_MATERIAL_ERROR));
+		}
+
 		List<String> result = recycleGuideService.getItems(material);
-		if (result.contains(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		if (result.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					ErrorCase.DATABASE_CONNECTION_ERROR));
 		}
-		if (result.contains(ErrorCase.NO_SUCH_MATERIAL_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
-		}
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		return ResponseEntity.ok(result);
 	}
 
 	@GetMapping("/{material}/{item}/guide")
-	public ResponseEntity<String> getGuideline(
+	public ResponseEntity<Object> getGuideline(
 		@PathVariable String material, @PathVariable String item) {
-		String result = recycleGuideService.getGuideline(material, item);
-		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		DocumentSnapshot result = recycleGuideService.getGuideline(material, item);
+		if (result == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					ErrorCase.DATABASE_CONNECTION_ERROR));
 		}
-		if (result.equals(ErrorCase.NO_SUCH_ITEM_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.NOT_FOUND);
+		if (!result.exists()) {
+			return ResponseEntity.notFound().build();
 		}
-		return new ResponseEntity<>(result, HttpStatus.OK);
+		return ResponseEntity
+			.ok(Objects.requireNonNull(result.get(recycleGuideService.GUIDELINE_FIELD_NAME)));
 	}
 
 	@DeleteMapping("/{material}/{item}/guide")
-	public ResponseEntity<String> deleteGuideline(
+	public ResponseEntity<Object> deleteGuideline(
 		@PathVariable String material, @PathVariable String item) {
-		String result = recycleGuideService.deleteGuide(material, item);
-		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		DocumentSnapshot result = recycleGuideService.getGuideline(material, item);
+		if (result == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					ErrorCase.DATABASE_CONNECTION_ERROR));
 		}
-		if (result.equals(ErrorCase.NO_SUCH_ITEM_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+		if (!result.exists()) {
+			return ResponseEntity.badRequest()
+				.body(
+					new ErrorMessage(HttpStatus.BAD_REQUEST.value(), ErrorCase.NO_SUCH_ITEM_ERROR));
 		}
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		recycleGuideService.deleteGuide(material, item);
+		return ResponseEntity.noContent().build();
 	}
 
 	@PatchMapping("/{material}/{item}/guide")
-	public ResponseEntity<String> updateGuideline(
+	public ResponseEntity<Object> updateGuideline(
 		@PathVariable String material, @PathVariable String item,
 		@RequestBody String newGuideline) {
-		String result = recycleGuideService.updateGuideline(material, item, newGuideline);
-		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		DocumentSnapshot result = recycleGuideService.getGuideline(material, item);
+		if (result == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					ErrorCase.DATABASE_CONNECTION_ERROR));
 		}
-		if (result.equals(ErrorCase.NO_SUCH_ITEM_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+		if (!result.exists()) {
+			return ResponseEntity.badRequest()
+				.body(
+					new ErrorMessage(HttpStatus.BAD_REQUEST.value(), ErrorCase.NO_SUCH_ITEM_ERROR));
 		}
-		return new ResponseEntity<>(HttpStatus.OK);
+		recycleGuideService.updateGuideline(material, item, newGuideline);
+		return ResponseEntity.ok().build();
+	}
+
+	private boolean isFieldValid(RecycleGuide recycleGuide) {
+		return !(recycleGuide.getGuideline() == null
+			|| recycleGuide.getItem() == null
+			|| recycleGuide.getMaterial() == null);
 	}
 }
