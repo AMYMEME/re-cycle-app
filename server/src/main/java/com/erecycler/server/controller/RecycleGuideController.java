@@ -78,16 +78,21 @@ public class RecycleGuideController {
 	}
 
 	@DeleteMapping("/{material}/{item}/guide")
-	public ResponseEntity<String> deleteGuideline(
+	public ResponseEntity<Object> deleteGuideline(
 		@PathVariable String material, @PathVariable String item) {
-		String result = recycleGuideService.deleteGuide(material, item);
-		if (result.equals(ErrorCase.DATABASE_CONNECTION_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.INTERNAL_SERVER_ERROR);
+		DocumentSnapshot result = recycleGuideService.getGuideline(material, item);
+		if (result == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+				.body(new ErrorMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(),
+					ErrorCase.DATABASE_CONNECTION_ERROR));
 		}
-		if (result.equals(ErrorCase.NO_SUCH_ITEM_ERROR)) {
-			return new ResponseEntity<>(result, HttpStatus.BAD_REQUEST);
+		if (!result.exists()) {
+			return ResponseEntity.badRequest()
+				.body(
+					new ErrorMessage(HttpStatus.BAD_REQUEST.value(), ErrorCase.NO_SUCH_ITEM_ERROR));
 		}
-		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+		recycleGuideService.deleteGuide(material, item);
+		return ResponseEntity.noContent().build();
 	}
 
 	@PatchMapping("/{material}/{item}/guide")
