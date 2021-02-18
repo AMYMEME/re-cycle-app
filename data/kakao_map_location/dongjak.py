@@ -12,19 +12,19 @@ def get_cloth_csv_data(read_filename, write_filename, missed_file_name):
 
     rf = open(read_filename, 'r', encoding='EUC-KR')
     reader = csv.reader(rf)
+    next(reader)  # for ignore header
     read_count = 0
-
     wf = open(write_filename, 'w', newline='')
     writer = csv.writer(wf)
     writer.writerow(['road_address', 'x', 'y'])
     success_count = 0
 
-    missed_f = open(missed_file_name, 'w', newline='')
+    missed_f = open(missed_file_name, 'a', newline='')
     missed_writer = csv.writer(missed_f)
     missed_count = 0
 
     for line in reader:
-        csv_location = ' '.join(line)
+        csv_location = ' '.join(line[1:])
         read_count += 1
         param = {'query': csv_location.encode('utf-8')}
         response = requests.get(kakao_url, headers=header, params=param)
@@ -35,7 +35,7 @@ def get_cloth_csv_data(read_filename, write_filename, missed_file_name):
             break
         if not response.json()['documents']:
             missed_count += 1
-            missed_writer.writerow(['구로구', csv_location])
+            missed_writer.writerow(['동작구', csv_location])
             continue
         response_result = response.json()['documents'][0]
         row = [response_result['address_name'], response_result['address']['x'], response_result['address']['y']]
